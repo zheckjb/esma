@@ -12,24 +12,22 @@ import java.nio.file.Paths;
 public class DownloadFromHttp {
     private static final int BUFFER_SIZE = 4096;
 
-    public static void downloadFile(String fileURL, String fileName)
-            throws IOException {
+    public static void downloadFile(UrlList urlList) throws IOException {
         Path currentRelativePath = Paths.get("");
         String s = currentRelativePath.toAbsolutePath().toString();
         System.out.println("Current relative path is: " + s);
 
-        URL url = new URL(fileURL);
+
+        URL url = new URL(urlList.getFileUrl());
         HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
         int responseCode = httpConn.getResponseCode();
 
         if (responseCode == HttpURLConnection.HTTP_OK) {
-            System.out.println("fileName = " + fileName);
-
             // opens input stream from the HTTP connection
             InputStream inputStream = httpConn.getInputStream();
             //String saveFilePath = saveDir + File.separator + fileName;
-            String saveFilePath = fileName;
-
+            String saveFilePath = urlList.getFilePath() + File.separator + urlList.getFileName();
+            System.out.println(saveFilePath);
             // opens an output stream to save into file
             FileOutputStream outputStream = new FileOutputStream(saveFilePath);
 

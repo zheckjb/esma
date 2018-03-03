@@ -19,9 +19,12 @@ import java.util.Date;
 import java.util.List;
 
 public class Main {
-    private static String DAY_START = "T00:00:00Z";
-    private static String DAY_END = "T23:59:59Z";
+    private static final String DAY_START = "T00:00:00Z";
+    private static final String DAY_END = "T23:59:59Z";
+
     private static String ERR_NO_ARGS = "No arguments found: expected <start date>#<end date>";
+    private static String PATH_FOR_FILES = "C:\\esma";
+    private static String FLES_TYPE = "DLTINS";
     private static String startDate;
     private static String endDate;
     private static String url;
@@ -48,22 +51,22 @@ public class Main {
                 startDate = buildDate(input[0],DAY_START);
                 endDate = buildDate(input[1],DAY_END);
                 if (input.length == 3 && input[2] != null) {
-                    type = input[2];
-                } else {
-                    type = "DLTINS";
+                    FLES_TYPE = input[2];
                 }
-                System.out.println(startDate);
-                System.out.println(endDate);
+                if (input.length == 4 && input[3] != null) {
+                    PATH_FOR_FILES = input[3];
+                }
                 url = buildUrl();
                 System.out.println(url);
                 try{
                     String response = makeRequest();
-                    getLinks(response,type);
+                    getLinksbyJson(response,FLES_TYPE);
                     if (!linksArray.isEmpty()) {
-                        for (UrlList arr : linksArray) {
-                            System.out.println("Downloading urll: "+arr.getFileUrl());
-                            System.out.println("Downloading fileName: "+arr.getFileName());
-                            downloadFiles(arr.getFileUrl(),arr.getFileName());
+                        for (UrlList urlList : linksArray) {
+                            //Thread thread = new Thread(getFiles::downloadFiles(arr.getFileUrl(),arr.getFileName()));
+                            //thread.start();
+                            downloadFiles(urlList);
+                            System.out.println("XML "+urlList.getFileXml());
                         }
                     }
                 } catch (Exception e) {
@@ -72,10 +75,15 @@ public class Main {
             }
         }
     }
-    private static void downloadFiles (String url,String filename) {
+
+
+
+    private static void downloadFiles (UrlList urlList) {
         DownloadFromHttp getFile = new DownloadFromHttp();
+        UnpackZip zipFile = new UnpackZip();
         try {
-            getFile.downloadFile(url,filename);
+            getFile.downloadFile(urlList);
+            zipFile.unZipIt(urlList);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -83,20 +91,21 @@ public class Main {
 
     }
 
-    private static void getLinks(String jsonText, String type) {
-        UrlList filesList = new UrlList();
+    private static void getLinksbyJson(String jsonText, String type) {
         JSONObject jsonObj = new JSONObject(jsonText);
         JSONObject jsonResp = jsonObj.getJSONObject("response");
         int jsonArrayNum = jsonResp.getInt("numFound");
         System.out.println("Number of elements "+jsonArrayNum);
         JSONArray jsonArray = jsonResp.getJSONArray("docs");
         for(int i = 0; i < jsonArray.length(); i++) {
+            UrlList filesList = new UrlList();
             JSONObject jsonElement = jsonArray.getJSONObject(i);
             String fileType = jsonElement.getString("file_type");
             if(fileType.equals(type)) {
                 System.out.printf("Download link: %s file name: %s \n",jsonElement.getString("download_link"),jsonElement.getString("file_name"));
                 filesList.setFileName(jsonElement.getString("file_name"));
                 filesList.setFileUrl(jsonElement.getString("download_link"));
+                filesList.setFilePath(PATH_FOR_FILES);
                 linksArray.add(filesList);
             }
         }
@@ -105,20 +114,23 @@ public class Main {
 
 
     private static String makeRequest() throws Exception  {
+        StringBuilder response = new StringBuilder();
         URL reqhttp = new URL(url);
         HttpURLConnection con = (HttpURLConnection) reqhttp.openConnection();
         con.setRequestMethod("GET");
         con.setRequestProperty("User-Agent", "Mozilla/5.0");
         int responseCode = con.getResponseCode();
-        //System.out.println("\nSending 'GET' request to URL : " + url);
-        //System.out.println("Response Code : " + responseCode);
-        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-        String inputLine;
-        StringBuilder response = new StringBuilder();
-        while ((inputLine = in.readLine()) != null) {
-            response.append(inputLine);
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+        }else {
+            throw new RuntimeException("Failed to download");
         }
-        in.close();
         return response.toString();
     }
 
