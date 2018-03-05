@@ -4,6 +4,8 @@ public class UrlList {
     private String fileUrl;
     private String fileName;
     private String filePath;
+    private String fileXml;
+    private String fileXmlNoAttr;
 
     public String getFileXml() {
         return fileXml;
@@ -13,7 +15,7 @@ public class UrlList {
         this.fileXml = fileXml;
     }
 
-    private String fileXml;
+
 
     public String getFileUrl() {
         return fileUrl;
@@ -37,5 +39,13 @@ public class UrlList {
 
     public void setFilePath(String filePath) {
         this.filePath = filePath;
+    }
+
+    public String getFileXmlNoAttr() {
+        return fileXmlNoAttr;
+    }
+
+    public void setFileXmlNoAttr(String fileXmlNoAttr) {
+        this.fileXmlNoAttr = fileXmlNoAttr;
     }
 }

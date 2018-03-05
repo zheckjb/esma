@@ -1,8 +1,13 @@
 package com.bib.esma;
 
+import jdk.internal.org.xml.sax.SAXException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.xpath.XPathExpressionException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +22,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import static com.bib.esma.XMLESMAParser.processEsmaXml;
 
 public class Main {
     private static final String DAY_START = "T00:00:00Z";
@@ -81,10 +88,24 @@ public class Main {
     private static void downloadFiles (UrlList urlList) {
         DownloadFromHttp getFile = new DownloadFromHttp();
         UnpackZip zipFile = new UnpackZip();
+        XMLESMAParser xmlFile = new XMLESMAParser();
         try {
             getFile.downloadFile(urlList);
             zipFile.unZipIt(urlList);
+            xmlFile.processEsmaXml(urlList);
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            e.printStackTrace();
+        } catch (XPathExpressionException e) {
+            e.printStackTrace();
+        } catch (org.xml.sax.SAXException e) {
+            e.printStackTrace();
+        } catch (TransformerConfigurationException e) {
+            e.printStackTrace();
+        } catch (TransformerException e) {
             e.printStackTrace();
         }
 
