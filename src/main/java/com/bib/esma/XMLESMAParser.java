@@ -19,9 +19,12 @@ import java.io.IOException;
 public class XMLESMAParser {
     private static XPathExpression xmlRefData;
     private static XPathExpression isinExpr;
-    private static ClassLoader classLoader;
-    public XMLESMAParser() {
-       classLoader = getClass().getClassLoader();
+    private static Source xslRemAttr;
+    private static Source xslMakeList;
+    public  XMLESMAParser() {
+        ClassLoader classLoader = getClass().getClassLoader();
+        xslRemAttr = new StreamSource(new File(classLoader.getResource("rem_attrib.xsl").getFile()));
+        xslMakeList = new StreamSource(new File(classLoader.getResource("keep_isin2.xsl").getFile()));
 
     }
 
@@ -29,34 +32,36 @@ public class XMLESMAParser {
     public static void processEsmaXml (UrlList urlList)
             throws ParserConfigurationException,TransformerConfigurationException,TransformerException,
             IOException, SAXException, XPathExpressionException, org.xml.sax.SAXException {
-        String xmlFilePath = urlList.getFilePath() + File.separator + urlList.getFileXml();
-        System.out.println("Process XML file " + xmlFilePath);
-
+        String xmlInFilePath = urlList.getFilePath() + File.separator + urlList.getFileXml();
+        String xmlOutFilePath = urlList.getFilePath() + File.separator + urlList.getFileXmlNoAttr();
+        File xmlInFile = new File(xmlInFilePath);
+        System.out.println("Process XML file " + xmlInFilePath);
         //attributes cleanup
-
         TransformerFactory factory = TransformerFactory.newInstance();
-        Source xslRemAttr = new StreamSource(new File(classLoader.getResource("rem_attrib.xsl").getFile()));
         Transformer transformer = factory.newTransformer(xslRemAttr);
-        Source text = new StreamSource(new File(xmlFilePath));
-        transformer.transform(text, new StreamResult("abc.xml"));
-        urlList.setFileXmlNoAttr("abc.xml");
-        String txmlFile = urlList.getFilePath() + File.separator + urlList.getFileXmlNoAttr();
+        Source text = new StreamSource(xmlInFile);
+        transformer.transform(text, new StreamResult(xmlOutFilePath));
+        xmlInFile.delete();
+        //secod coversion
+        String isinFilePath = urlList.getFilePath() + File.separator + urlList.getFileXmlNoAttr().replaceAll("DLTINS","ISIN");
+        Transformer trans_isin = factory.newTransformer(xslMakeList);
+        Source isinlist = new StreamSource(xmlOutFilePath);
+        trans_isin.transform(isinlist,new StreamResult(isinFilePath));
+
         // XPath preparation
-        XPath xpath = XPathFactory.newInstance().newXPath();
+    //    XPath xpath = XPathFactory.newInstance().newXPath();
         //xmlRefData = xpath.compile("/BizData/Pyld/Document/FinInstrmRptgRefDataRpt/RefData");
         //isinExpr = xpath.compile("./FinInstrmGnlAttrbts/Id/text()");
-        xmlRefData = xpath.compile("/BizData/Pyld/Document/FinInstrmRptgRefDataDltaRpt/FinInstrm");
-        isinExpr = xpath.compile("./ModfdRcrd/FinInstrmGnlAttrbts/Id/text()");
+    //    xmlRefData = xpath.compile("/BizData/Pyld/Document/FinInstrmRptgRefDataDltaRpt/FinInstrm");
+    //    isinExpr = xpath.compile("./ModfdRcrd/FinInstrmGnlAttrbts/Id/text()");
 
         //Reading XML document
-        File inXmlFile = new File(txmlFile);
-        DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        Document document = builder.parse(inXmlFile);
-        //StreamSource stylesource = new StreamSource(stylesheet);
-        //Transformer transformer = Factory.newTransformer(stylesource);
-        System.out.println("Document parsed");
-        processDocument(document);
-        
+    //    File inXmlFile = new File(xmlOutFilePath);
+    //    DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+    //    Document document = builder.parse(inXmlFile);
+    //    System.out.println("Document parsed");
+     //   processDocument(document);
+
     }
     private static void processDocument(Document document) throws XPathExpressionException {
         NodeList docNodeList = (NodeList) xmlRefData.evaluate(document, XPathConstants.NODESET);

@@ -13,6 +13,7 @@ public class UrlList {
 
     public void setFileXml(String fileXml) {
         this.fileXml = fileXml;
+        this.fileXmlNoAttr = "Noattr_"+fileXml;
     }
 
 
