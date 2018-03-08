@@ -1,6 +1,8 @@
 package com.bib.esma;
 
-import jdk.internal.org.xml.sax.SAXException;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -9,34 +11,35 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.BufferedReader;
-import java.io.File;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
+
 import java.util.List;
 
-import static com.bib.esma.XMLESMAParser.processEsmaXml;
+
 
 public class Main {
     private static final String DAY_START = "T00:00:00Z";
     private static final String DAY_END = "T23:59:59Z";
 
     private static String ERR_NO_ARGS = "No arguments found: expected <start date>#<end date>";
-    private static String PATH_FOR_FILES = "C:\\esma";
-    private static String FLES_TYPE = "DLTINS";
+    private static String PATH_FOR_FILES = "C:\\Users\\JavaCourses1\\Java\\esma";
+    private static String FILES_TYPE = "DLTINS";
     private static String startDate;
     private static String endDate;
     private static String url;
     private static List<UrlList> linksArray= new ArrayList<>();
-
+    private static final Logger logger = Logger.getLogger(Main.class);
+    //https://www.mkyong.com/logging/log4j-hello-world-example/
+    //maven repackage dependency jar
     public static void main(String[] args){
         System.out.println("Program started");
         if (args.length < 1) {
@@ -57,8 +60,9 @@ public class Main {
             } else {
                 startDate = buildDate(input[0],DAY_START);
                 endDate = buildDate(input[1],DAY_END);
+                logger.info("Start date: "+startDate+" End date: "+endDate);
                 if (input.length == 3 && input[2] != null) {
-                    FLES_TYPE = input[2];
+                    FILES_TYPE = input[2];
                 }
                 if (input.length == 4 && input[3] != null) {
                     PATH_FOR_FILES = input[3];
@@ -67,7 +71,7 @@ public class Main {
                 System.out.println(url);
                 try{
                     String response = makeRequest();
-                    getLinksbyJson(response,FLES_TYPE);
+                    getLinksbyJson(response,FILES_TYPE);
                     if (!linksArray.isEmpty()) {
                         for (UrlList urlList : linksArray) {
                             //Thread thread = new Thread(getFiles::downloadFiles(arr.getFileUrl(),arr.getFileName()));
@@ -97,9 +101,7 @@ public class Main {
             e.printStackTrace();
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (XPathExpressionException e) {
+        }  catch (XPathExpressionException e) {
             e.printStackTrace();
         } catch (org.xml.sax.SAXException e) {
             e.printStackTrace();

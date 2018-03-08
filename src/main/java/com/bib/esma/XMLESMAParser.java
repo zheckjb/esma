@@ -1,19 +1,18 @@
 package com.bib.esma;
 
-import jdk.internal.org.xml.sax.SAXException;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.*;
 import java.io.File;
-import java.io.FileInputStream;
+
 import java.io.IOException;
 
 public class XMLESMAParser {
@@ -31,7 +30,7 @@ public class XMLESMAParser {
 
     public static void processEsmaXml (UrlList urlList)
             throws ParserConfigurationException,TransformerConfigurationException,TransformerException,
-            IOException, SAXException, XPathExpressionException, org.xml.sax.SAXException {
+            IOException,  XPathExpressionException, org.xml.sax.SAXException {
         String xmlInFilePath = urlList.getFilePath() + File.separator + urlList.getFileXml();
         String xmlOutFilePath = urlList.getFilePath() + File.separator + urlList.getFileXmlNoAttr();
         File xmlInFile = new File(xmlInFilePath);
