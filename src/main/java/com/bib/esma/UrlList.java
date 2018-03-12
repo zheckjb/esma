@@ -5,7 +5,9 @@ public class UrlList {
     private String fileName;
     private String filePath;
     private String fileXml;
+    private String fileType;
     private String fileXmlNoAttr;
+
 
     public String getFileXml() {
         return fileXml;
@@ -13,10 +15,7 @@ public class UrlList {
 
     public void setFileXml(String fileXml) {
         this.fileXml = fileXml;
-        this.fileXmlNoAttr = "Noattr_"+fileXml;
     }
-
-
 
     public String getFileUrl() {
         return fileUrl;
@@ -48,5 +47,13 @@ public class UrlList {
 
     public void setFileXmlNoAttr(String fileXmlNoAttr) {
         this.fileXmlNoAttr = fileXmlNoAttr;
+    }
+
+    public String getFileType() {
+        return fileType;
+    }
+
+    public void setFileType(String fileType) {
+        this.fileType = fileType;
     }
 }

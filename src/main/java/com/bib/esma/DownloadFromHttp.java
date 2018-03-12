@@ -1,5 +1,7 @@
 package com.bib.esma;
 
+import org.apache.log4j.Logger;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,13 +13,9 @@ import java.nio.file.Paths;
 
 public class DownloadFromHttp {
     private static final int BUFFER_SIZE = 4096;
+    private static final Logger logger = Logger.getLogger(DownloadFromHttp.class);
 
-    public static void downloadFile(UrlList urlList) throws IOException {
-        Path currentRelativePath = Paths.get("");
-        String s = currentRelativePath.toAbsolutePath().toString();
-        System.out.println("Current relative path is: " + s);
-
-
+    public void downloadFile(UrlList urlList) throws IOException {
         URL url = new URL(urlList.getFileUrl());
         HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
         int responseCode = httpConn.getResponseCode();
@@ -27,7 +25,7 @@ public class DownloadFromHttp {
             InputStream inputStream = httpConn.getInputStream();
             //String saveFilePath = saveDir + File.separator + fileName;
             String saveFilePath = urlList.getFilePath() + File.separator + urlList.getFileName();
-            System.out.println(saveFilePath);
+            logger.info("Process download to: "+saveFilePath);
             // opens an output stream to save into file
             FileOutputStream outputStream = new FileOutputStream(saveFilePath);
 
@@ -40,9 +38,9 @@ public class DownloadFromHttp {
             outputStream.close();
             inputStream.close();
 
-            System.out.println("File downloaded");
+            logger.info("File downloaded");
         } else {
-            System.out.println("No file to download. Server replied HTTP code: " + responseCode);
+            logger.error("No file to download. Server replied HTTP code: " + responseCode);
         }
         httpConn.disconnect();
     }

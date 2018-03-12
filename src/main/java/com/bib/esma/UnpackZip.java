@@ -1,5 +1,7 @@
 package com.bib.esma;
 
+import org.apache.log4j.Logger;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -9,11 +11,12 @@ import java.util.zip.ZipInputStream;
 
 public class UnpackZip {
     private static final int BUFFER_SIZE = 4096;
+    private static final Logger logger = Logger.getLogger(UnpackZip.class);
 
     public void unZipIt(UrlList urlList) throws IOException {
-        String[] filesExtracted;
-        String savedFilePath = urlList.getFilePath() + File.separator + urlList.getFileName();
         //get the zip file content
+        String savedFilePath = urlList.getFilePath() + File.separator + urlList.getFileName();
+        logger.info("Process to unpack file: "+savedFilePath);
         ZipInputStream inputStream = new ZipInputStream(new FileInputStream(savedFilePath));
         //get the zipped file list entry
         ZipEntry ze = inputStream.getNextEntry();
@@ -21,7 +24,7 @@ public class UnpackZip {
             if (!ze.isDirectory()) {
                 String fileName = urlList.getFilePath() + File.separator + ze.getName();
                 File newFile = new File(fileName);
-                System.out.println("file unzip : " + newFile.getAbsoluteFile());
+                logger.info("Unpacking file: " + ze.getName());
                 FileOutputStream outputStream = new FileOutputStream(newFile);
                 byte[] buffer = new byte[BUFFER_SIZE];
                 int bytesRead = -1;
@@ -35,13 +38,11 @@ public class UnpackZip {
         }
         inputStream.closeEntry();
         inputStream.close();
+        logger.info("Removing zip fle: "+savedFilePath);
         File f = new File(savedFilePath);
         boolean delete = f.delete();
         if (!delete) {
-            throw new RuntimeException("Failed to delete file "+ savedFilePath);
+            logger.error("Failed to delete file "+ savedFilePath);
         }
-        System.out.println("Done");
-
-
     }
 }
