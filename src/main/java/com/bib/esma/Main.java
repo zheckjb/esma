@@ -9,14 +9,12 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
-import java.io.BufferedReader;
+import java.io.*;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -34,6 +32,7 @@ public class Main {
     private static String ERR_NO_ARGS = "No arguments found: expected <start date>#<end date>";
     private static String PATH_FOR_FILES;
     private static String FILES_TYPE;
+    private static String PROC_TYPE;
     private static String startDate;
     private static String endDate;
     private static String url;
@@ -41,7 +40,7 @@ public class Main {
     private static final Logger logger = Logger.getLogger(Main.class);
 
     private Main(){
-        loadProps();
+        //loadProps();
     }
 
     public static void main(String[] args){
@@ -50,13 +49,14 @@ public class Main {
             System.out.println(ERR_NO_ARGS);
             logger.error(ERR_NO_ARGS);
         } else {
-            //new Main().getFiles(args[0]);
-            new Main().testXmlSearch();
+            new Main().getFiles(args[0]);
+            //new Main().testXmlSearch();
         }
     }
 
-    public  void getFiles(String inputString) {
-            String[] input = inputString.split("#");
+    public void getFiles(String inputString) {
+        loadProps();
+        String[] input = inputString.split("#");
             if (input.length < 2) {
                 logger.error(ERR_NO_ARGS);
                 System.out.println(ERR_NO_ARGS);
@@ -68,6 +68,9 @@ public class Main {
                 if (input.length == 3 && input[2] != null) {
                     FILES_TYPE = input[2];
                 }
+                if(input.length == 4 && input[3] != null){
+                    PROC_TYPE = input[3];
+                }
                 url = buildUrl();
                 logger.info(url);
                 try{
@@ -75,7 +78,7 @@ public class Main {
                     getLinksbyJson(response,FILES_TYPE);
                     if (!linksArray.isEmpty()) {
                         for (UrlList urlList : linksArray) {
-                            //Thread thread = new Thread(getFiles::downloadFiles(arr.getFileUrl(),arr.getFileName()));
+                            //Thread thread = new Thread(getFiles::processFile(urlList));
                             //thread.start();
                             processFile(urlList);
                         }
@@ -98,13 +101,16 @@ public class Main {
     private static void processFile (UrlList urlList) {
         DownloadFromHttp getFile = new DownloadFromHttp();
         UnpackZip zipFile = new UnpackZip();
-        //XMLXSLFormatter xmlFile = new XMLXSLFormatter();
+        XMLXSLFormatter xmlFile = new XMLXSLFormatter();
         SearchISIN isinSearch = new SearchISIN();
         try {
             getFile.downloadFile(urlList);
             zipFile.unZipIt(urlList);
-            //xmlFile.transformXml(urlList);
-            isinSearch.parseXml(urlList);
+            if (PROC_TYPE.equals("SEARCH") ) {
+                isinSearch.parseXml(urlList);
+            } else {
+                xmlFile.transformXml(urlList);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -178,13 +184,21 @@ public class Main {
     private void loadProps() {
         ClassLoader classLoader = getClass().getClassLoader();
         Properties props = new Properties();
-        try {
-            props.load(new FileInputStream(classLoader.getResource("config.properties").getFile()));
+        try (InputStream in = classLoader.getResourceAsStream("config.properties")) {
+            props.load(in);
             FILES_TYPE = props.getProperty("default.type");
-            PATH_FOR_FILES = props.getProperty("working.path");
             logger.info("Default type is "+FILES_TYPE);
+            PATH_FOR_FILES = props.getProperty("working.path");
+            logger.info("Working path: "+PATH_FOR_FILES);
+            String isinFileName = props.getProperty("isin.file");
+            String isinFilePath = props.getProperty("isin.path");
+            String isinFile = isinFilePath + File.separator + isinFileName;
+            Path isinPath = Paths.get(isinFile);
+            Files.deleteIfExists(isinPath);
+
         } catch (IOException e) {
             logger.error("Unable to read config.properties");
+            e.printStackTrace();
         }
         //Just for info
         Path currentRelativePath = Paths.get("");

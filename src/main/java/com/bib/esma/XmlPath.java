@@ -2,9 +2,8 @@ package com.bib.esma;
 
 import org.apache.log4j.Logger;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -17,8 +16,8 @@ public class XmlPath {
     public XmlPath (String fileType) {
         ClassLoader classLoader = getClass().getClassLoader();
         Properties props = new Properties();
-        try {
-            props.load(new FileInputStream(classLoader.getResource("config.properties").getFile()));
+        try (InputStream in = classLoader.getResourceAsStream("config.properties")) {
+            props.load(in);
             String filePath = "search."+fileType.toUpperCase();
 
             searchXmlPath = props.getProperty(filePath);

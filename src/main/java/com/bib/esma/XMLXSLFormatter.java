@@ -12,8 +12,7 @@ public class XMLXSLFormatter {
     private static String ISIN_PFX = "ISIN";
     private static final Logger logger = Logger.getLogger(XMLXSLFormatter.class);
 
-    public XMLXSLFormatter(){
-    }
+
     public void transformXml (UrlList urlList)  {
         ClassLoader classLoader = getClass().getClassLoader();
         Source xslRemAttr = new StreamSource(new File(classLoader.getResource("rem_attrib.xsl").getFile()));
