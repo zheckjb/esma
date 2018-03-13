@@ -11,15 +11,16 @@ public class XMLESMAParser extends DefaultHandler{
     private static final Logger logger = Logger.getLogger(XMLESMAParser.class);
     private XmlPath xmlPath;
     private CheckISIN isinList;
-    private String fileType;
+    //private String fileType;
     private Boolean flagAddIsin = false;
     private Boolean flagRemIsin = false;
 
-    public XMLESMAParser (SearchISIN value) {
-        logger.info("File type: "+value.getFileType());
-        xmlPath = new XmlPath(value.getFileType());
-        isinList = new CheckISIN();
-        fileType = value.getFileType();
+    public XMLESMAParser (CheckISIN value) {
+        //logger.info("File type: "+value.getFileType());
+        xmlPath = new XmlPath();
+        isinList = value;
+        //isinList = new CheckISIN();
+        //fileType = value.getFileType();
     }
 
     @Override
@@ -57,6 +58,6 @@ public class XMLESMAParser extends DefaultHandler{
 
     @Override
     public void endDocument() {
-        isinList.saveIsinList();
+        //isinList.saveIsinList();
     }
 }

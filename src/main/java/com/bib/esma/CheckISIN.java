@@ -59,7 +59,7 @@ public class CheckISIN {
             ISINList sm = isinListMap.get(value);
             sm.setSmStatus(true);
             isinListMap.put(value,sm);
-            logger.info(String.format("SM %s with ISIN %s updated with YES",sm.getSmId(0),value));
+            logger.debug(String.format("SM %s with ISIN %s updated with YES",sm.getSmId(0),value));
         }
     }
 
@@ -70,7 +70,7 @@ public class CheckISIN {
             ISINList sm = isinListMap.get(value);
             sm.setSmStatus(false);
             isinListMap.put(value,sm);
-            logger.info(String.format("SM %s with ISIN %s updated with NO",sm.getSmId(0),value));
+            logger.debug(String.format("SM %s with ISIN %s updated with NO",sm.getSmId(0),value));
         }
     }
 

@@ -20,17 +20,15 @@ public class XmlPath {
     private String nodeTicker;
     private String fileType;
 
-    public XmlPath (String fileType) {
+    public XmlPath () {
         ClassLoader classLoader = getClass().getClassLoader();
         Properties props = new Properties();
-        this.fileType = fileType;
         try (InputStream in = classLoader.getResourceAsStream("config.properties")) {
             props.load(in);
             searchFULPath = props.getProperty("search.FULINS");
             searchDLTNew = props.getProperty("search.DLTINS.new");
             searchDLTUpd = props.getProperty("search.DLTINS.upd");
             searchDLTEnd= props.getProperty("search.DLTINS.end");
-
         } catch (IOException e) {
             logger.error("Unable to read config.properties");
         }

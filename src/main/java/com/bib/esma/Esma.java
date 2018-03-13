@@ -5,10 +5,6 @@ import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.xpath.XPathExpressionException;
 import java.io.*;
 
 import java.net.HttpURLConnection;
@@ -26,41 +22,37 @@ import java.util.List;
 import java.util.Properties;
 
 
-public class Main {
+public class Esma {
     private static final String DAY_START = "T00:00:00Z";
     private static final String DAY_END = "T23:59:59Z";
-    private static String ERR_NO_ARGS = "No arguments found: expected <start date>#<end date>";
+    private static final String ERR_NO_ARGS = "No arguments found: expected <start date>#<end date>";
+    private static final String MSG_END =  "Finish";
+    private static final String PROC_TYPE = "SEARCH";
     private static String workingPath;
     private static String searchFileType;
     private static String processType;
-    private static String PROC_TYPE = "SEARCH";
     private static String startDate;
     private static String endDate;
     private static String url;
+    private static CheckISIN isinList;
     private static List<UrlList> linksArray= new ArrayList<>();
-    private static final Logger logger = Logger.getLogger(Main.class);
+    private static final Logger logger = Logger.getLogger(Esma.class);
 
-    private Main(){
+    private Esma(){
         //loadProps();
     }
 
     public static void main(String[] args){
-        System.out.println("Program started");
-        if (args.length < 1) {
-            System.out.println(ERR_NO_ARGS);
-            logger.error(ERR_NO_ARGS);
-        } else {
-            new Main().getFiles(args[0]);
-            //new Main().testXmlSearch();
-        }
+        new Esma().getFiles(args[0]);
     }
 
-    public void getFiles(String inputString) {
+    public String getFiles(String inputString) {
         loadProps();
+        logger.info("Program started");
         String[] input = inputString.split("#");
             if (input.length < 2) {
                 logger.error(ERR_NO_ARGS);
-                System.out.println(ERR_NO_ARGS);
+                return ERR_NO_ARGS;
             } else {
                 startDate = buildDate(input[0],DAY_START);
                 endDate = buildDate(input[1],DAY_END);
@@ -78,16 +70,20 @@ public class Main {
                     String response = makeRequest();
                     getLinksbyJson(response,searchFileType);
                     if (!linksArray.isEmpty()) {
+                        isinList = new CheckISIN();
                         for (UrlList urlList : linksArray) {
                             //Thread thread = new Thread(getFiles::processFile(urlList));
                             //thread.start();
                             processFile(urlList);
                         }
+                        isinList.saveIsinList();
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                return MSG_END;
             }
+
 
     }
 
@@ -96,7 +92,8 @@ public class Main {
             urlList.setFilePath("C:\\esma");
             urlList.setFileXml("DLTINS_test.xml");
             SearchISIN searchISIN = new SearchISIN();
-            searchISIN.parseXml(urlList);
+            CheckISIN isinList = new CheckISIN();
+            searchISIN.parseXml(urlList,isinList);
     }
 
     private static void processFile (UrlList urlList) {
@@ -108,7 +105,7 @@ public class Main {
             getFile.downloadFile(urlList);
             zipFile.unZipIt(urlList);
             if (processType == null || processType.equals(PROC_TYPE) ) {
-                isinSearch.parseXml(urlList);
+                isinSearch.parseXml(urlList,isinList);
             } else {
                 xmlFile.transformXml(urlList);
             }
@@ -143,6 +140,7 @@ public class Main {
 
 
     private static String makeRequest() throws Exception  {
+        System.setProperty("java.net.useSystemProxies", "true");
         StringBuilder response = new StringBuilder();
         URL reqhttp = new URL(url);
         HttpURLConnection con = (HttpURLConnection) reqhttp.openConnection();
