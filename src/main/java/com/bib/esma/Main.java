@@ -30,9 +30,10 @@ public class Main {
     private static final String DAY_START = "T00:00:00Z";
     private static final String DAY_END = "T23:59:59Z";
     private static String ERR_NO_ARGS = "No arguments found: expected <start date>#<end date>";
-    private static String PATH_FOR_FILES;
-    private static String FILES_TYPE;
-    private static String PROC_TYPE;
+    private static String workingPath;
+    private static String searchFileType;
+    private static String processType;
+    private static String PROC_TYPE = "SEARCH";
     private static String startDate;
     private static String endDate;
     private static String url;
@@ -66,16 +67,16 @@ public class Main {
                 logger.info("Input parameters: "+inputString);
                 logger.info("Start date: "+startDate+" End date: "+endDate);
                 if (input.length == 3 && input[2] != null) {
-                    FILES_TYPE = input[2];
+                    searchFileType = input[2].toUpperCase();
                 }
                 if(input.length == 4 && input[3] != null){
-                    PROC_TYPE = input[3];
+                    processType = input[3].toUpperCase();
                 }
                 url = buildUrl();
                 logger.info(url);
                 try{
                     String response = makeRequest();
-                    getLinksbyJson(response,FILES_TYPE);
+                    getLinksbyJson(response,searchFileType);
                     if (!linksArray.isEmpty()) {
                         for (UrlList urlList : linksArray) {
                             //Thread thread = new Thread(getFiles::processFile(urlList));
@@ -106,7 +107,7 @@ public class Main {
         try {
             getFile.downloadFile(urlList);
             zipFile.unZipIt(urlList);
-            if (PROC_TYPE.equals("SEARCH") ) {
+            if (processType == null || processType.equals(PROC_TYPE) ) {
                 isinSearch.parseXml(urlList);
             } else {
                 xmlFile.transformXml(urlList);
@@ -132,8 +133,8 @@ public class Main {
                 logger.info(String.format("File name: %s from link: %s",jsonElement.getString("file_name"),jsonElement.getString("download_link")));
                 filesList.setFileName(jsonElement.getString("file_name"));
                 filesList.setFileUrl(jsonElement.getString("download_link"));
-                filesList.setFilePath(PATH_FOR_FILES);
-                filesList.setFileType(FILES_TYPE);
+                filesList.setFilePath(workingPath);
+                filesList.setFileType(fileType);
                 linksArray.add(filesList);
             }
         }
@@ -186,10 +187,10 @@ public class Main {
         Properties props = new Properties();
         try (InputStream in = classLoader.getResourceAsStream("config.properties")) {
             props.load(in);
-            FILES_TYPE = props.getProperty("default.type");
-            logger.info("Default type is "+FILES_TYPE);
-            PATH_FOR_FILES = props.getProperty("working.path");
-            logger.info("Working path: "+PATH_FOR_FILES);
+            searchFileType = props.getProperty("default.type").toUpperCase();
+            logger.info("Default type is "+searchFileType);
+            workingPath = props.getProperty("working.path");
+            logger.info("Working path: "+workingPath);
             String isinFileName = props.getProperty("isin.file");
             String isinFilePath = props.getProperty("isin.path");
             String isinFile = isinFilePath + File.separator + isinFileName;

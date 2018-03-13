@@ -9,19 +9,28 @@ import java.util.List;
 import java.util.Properties;
 
 public class XmlPath {
-    private static List<String> xmlPathArr = new ArrayList<>();
     private static final Logger logger = Logger.getLogger(XmlPath.class);
-    private static String searchXmlPath;
+    private List<String> xmlPathArr = new ArrayList<>();
+    private String xmlPath;
+    private String searchFULPath;
+    private String searchDLTNew;
+    private String searchDLTEnd;
+    private String searchDLTUpd;
+    private String nodeIsin;
+    private String nodeTicker;
+    private String fileType;
 
     public XmlPath (String fileType) {
         ClassLoader classLoader = getClass().getClassLoader();
         Properties props = new Properties();
+        this.fileType = fileType;
         try (InputStream in = classLoader.getResourceAsStream("config.properties")) {
             props.load(in);
-            String filePath = "search."+fileType.toUpperCase();
+            searchFULPath = props.getProperty("search.FULINS");
+            searchDLTNew = props.getProperty("search.DLTINS.new");
+            searchDLTUpd = props.getProperty("search.DLTINS.upd");
+            searchDLTEnd= props.getProperty("search.DLTINS.end");
 
-            searchXmlPath = props.getProperty(filePath);
-            logger.info("XML search path: "+searchXmlPath);
         } catch (IOException e) {
             logger.error("Unable to read config.properties");
         }
@@ -32,26 +41,44 @@ public class XmlPath {
         if (i > 0) {
             xmlPathArr.remove(i-1);
         }
-
+        xmlPath = buildPath();
     }
 
     public void addElement(String value) {
         xmlPathArr.add(value);
+        xmlPath = buildPath();
     }
 
-    public boolean compare(String xmlPath) {
-        return xmlPath.equals(searchXmlPath);
+    public boolean compareFUL(){
+        return searchFULPath.equals(xmlPath);
     }
+
+    public boolean compareDLTnew(){
+        return searchDLTNew.equals(xmlPath);
+    }
+
+    public boolean compareDLTend() {
+        return searchDLTEnd.equals(xmlPath);
+    }
+
+    public boolean compareDLTupd() {
+        return searchDLTUpd.equals(xmlPath);
+    }
+
+    public String buildPath() {
+            String result = null;
+            for (String value : xmlPathArr) {
+                if (result != null) {
+                    result = String.format("%s/%s",result,value);
+                } else {
+                    result = value;
+                }
+            }
+            return result;
+    }
+
     @Override
     public String toString(){
-        String result = null;
-        for (String value : xmlPathArr) {
-            if (result != null) {
-                result = String.format("%s/%s",result,value);
-            } else {
-                result = value;
-            }
-        }
-        return result;
+        return buildPath();
     }
 }

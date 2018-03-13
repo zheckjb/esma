@@ -1,51 +1,50 @@
 package com.bib.esma;
 
-import org.apache.log4j.Logger;
-
-import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
 
 public class ISINList {
-    private static final Logger logger = Logger.getLogger(ISINList.class);
-    private static String isinFile;
-    //private static List<String> isinList =  new ArrayList<>();
-    private static HashSet<String> isinSet = new HashSet<String>();
-    public ISINList (){
-        ClassLoader classLoader = getClass().getClassLoader();
-        Properties props = new Properties();
-        try (InputStream in = classLoader.getResourceAsStream("config.properties")) {
-            props.load(in);
-            String isinFileName = props.getProperty("isin.file");
-            String isinFilePath = props.getProperty("isin.path");
-            isinFile = isinFilePath + File.separator + isinFileName;
-            logger.info("ISIN file: "+isinFile);
-        } catch (IOException e) {
-            logger.error("Unable to read config.properties");
-        }
+    private ArrayList<String> smId = new ArrayList<String>();;
+    private String smTicker;
+    private boolean smStatus;
+    private boolean smShare;
+
+    public String getSmTicker() {
+        return smTicker;
     }
 
-    public void addIsin(String value) {
-        isinSet.add(value);
+    public void setSmTicker(String smTicker) {
+        this.smTicker = smTicker;
     }
 
-    public void saveIsinFile() {
-        logger.info("ISIN Records found: "+isinSet.size());
 
-        try {
-            File file = new File(isinFile);
-            FileWriter fileHandle = new FileWriter(file);
-            for (Object value : isinSet){
-                fileHandle.append(String.format("%s \r\n", value));
-            }
-            fileHandle.flush();
-            fileHandle.close();
-            logger.info("File saved");
-        } catch ( IOException e) {
-            logger.error("Unable to write to");
+    public String getSmId(int id) {
+        return smId.get(id);
+    }
+
+    public void addSmId(String smId) {
+        this.smId.add(smId);
+    }
+    public int smIdLen() {
+        return this.smId.size();
+    }
+
+    public boolean isSmShare (){
+        return smShare;
+    }
+
+    public boolean isSmStatus() {
+        return smStatus;
+    }
+
+    public void setSmStatus(boolean smStatus) {
+        this.smStatus = smStatus;
+    }
+    public String getSmStatus() {
+        if (smStatus) {
+            return "YES";
+        } else {
+            return "NO";
         }
-
     }
 
 }
