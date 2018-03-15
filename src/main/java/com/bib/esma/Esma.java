@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -37,17 +38,18 @@ public class Esma {
     private static CheckISIN isinList;
     private static List<UrlList> linksArray= new ArrayList<>();
     private static final Logger logger = Logger.getLogger(Esma.class);
+    private ClassLoader classLoader = getClass().getClassLoader();
 
-    private Esma(){
-        //loadProps();
-    }
 
     public static void main(String[] args){
+        System.out.println("Argumnts: "+ Arrays.toString(args));
         new Esma().getFiles(args[0]);
     }
 
     public String getFiles(String inputString) {
+        System.out.println("Args 1"+inputString);
         loadProps();
+        System.out.println("Args 2");
         logger.info("Program started");
         String[] input = inputString.split("#");
             if (input.length < 2) {
@@ -180,10 +182,18 @@ public class Esma {
         return http.toString();
 
     }
-    private void loadProps() {
-        ClassLoader classLoader = getClass().getClassLoader();
+    private  void loadProps() {
+        //ClassLoader classLoader = getClass().getClassLoader();
         Properties props = new Properties();
-        try (InputStream in = classLoader.getResourceAsStream("config.properties")) {
+        URL confPath = ClassLoader.getSystemResource("esma.properties");
+        System.out.println("path: "+confPath.toString());
+        URL confPath2 = ClassLoader.getSystemResource("config.properties");
+        System.out.println("path: "+confPath2.toString());
+        URL confPath3 = ClassLoader.getSystemResource("log4j.properties");
+        System.out.println("path: "+confPath3.toString());
+        String ss = classLoader.getResource("config.properties").toString();
+        System.out.println("classloader: "+ ss );
+        try (InputStream in = Esma.class.getClassLoader().getResourceAsStream("esma.properties")) {
             props.load(in);
             searchFileType = props.getProperty("default.type").toUpperCase();
             logger.info("Default type is "+searchFileType);

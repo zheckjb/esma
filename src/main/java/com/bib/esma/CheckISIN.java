@@ -15,7 +15,7 @@ public class CheckISIN {
     public CheckISIN(){
         ClassLoader classLoader = getClass().getClassLoader();
         Properties props = new Properties();
-        try (InputStream in = classLoader.getResourceAsStream("config.properties")) {
+        try (InputStream in = classLoader.getResourceAsStream("esma.properties")) {
             props.load(in);
             String isinFilePath = props.getProperty("isin.path");
             String isinInFileName = props.getProperty("isin.in.file");

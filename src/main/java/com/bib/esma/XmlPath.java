@@ -23,7 +23,7 @@ public class XmlPath {
     public XmlPath () {
         ClassLoader classLoader = getClass().getClassLoader();
         Properties props = new Properties();
-        try (InputStream in = classLoader.getResourceAsStream("config.properties")) {
+        try (InputStream in = classLoader.getResourceAsStream("esma.properties")) {
             props.load(in);
             searchFULPath = props.getProperty("search.FULINS");
             searchDLTNew = props.getProperty("search.DLTINS.new");
